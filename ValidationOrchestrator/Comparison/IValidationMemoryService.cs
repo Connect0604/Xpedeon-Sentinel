@@ -38,12 +38,12 @@ public interface IValidationMemoryService
     /// <summary>
     /// Get status of specific phase
     /// </summary>
-    Task<PhaseStatus?> GetPhaseStatusAsync(string sessionId, ValidationPhase phase);
+    Task<SessionPhaseStatus?> GetSessionPhaseStatusAsync(string sessionId, ValidationPhase phase);
 
     /// <summary>
     /// Update phase status with progress
     /// </summary>
-    Task UpdatePhaseStatusAsync(string sessionId, PhaseStatus status);
+    Task UpdateSessionPhaseStatusAsync(string sessionId, SessionPhaseStatus status);
 
     // Artifact Storage
     /// <summary>

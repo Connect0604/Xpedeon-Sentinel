@@ -311,7 +311,7 @@ public class DashboardService : IDashboardService
             return await Task.FromResult(result);
         }
 
-        return await Task.FromResult(new());
+        return new();
     }
 
     public async Task AcknowledgeAlertAsync(string alertId)
@@ -362,7 +362,7 @@ public class DashboardService : IDashboardService
         if (_progress.TryGetValue(sessionId, out var items))
             return await Task.FromResult(items.OrderByDescending(p => p.Timestamp).ToList());
 
-        return await Task.FromResult(new());
+        return new();
     }
 
     public async Task UpdateProgressItemAsync(string progressId, string status, long durationMs)
@@ -414,12 +414,12 @@ public class DashboardService : IDashboardService
 
     public async Task<List<ModuleDetails>> GetModulesOverviewAsync(string sessionId)
     {
-        return await Task.FromResult(new());
+        return new();
     }
 
     public async IAsyncEnumerable<DashboardUpdate> GetUpdatesStreamAsync(
         string sessionId,
-        System.Collections.Generic.CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         if (_updateHistory.TryGetValue(sessionId, out var history))
         {
@@ -542,7 +542,7 @@ public class DashboardService : IDashboardService
         DateTime startTime,
         DateTime endTime)
     {
-        return await Task.FromResult(new());
+        return new();
     }
 
     public async Task<DashboardExport> ExportDashboardAsync(

@@ -53,14 +53,14 @@ public interface IMetricsService
     /// <summary>
     /// Calculate discrepancy metrics from analysis results
     /// </summary>
-    Task<DiscrepancyMetrics> CalculateDiscrepancyMetricsAsync(
+    Task<ValidationDiscrepancyMetrics> CalculateDiscrepancyMetricsAsync(
         string sessionId,
         DiscrepancyAnalysisResult analysis);
 
     /// <summary>
     /// Get discrepancy distribution by category and severity
     /// </summary>
-    Task<DiscrepancyMetrics> GetDiscrepancyBreakdownAsync(string sessionId);
+    Task<ValidationDiscrepancyMetrics> GetDiscrepancyBreakdownAsync(string sessionId);
 
     // Performance Metrics
     /// <summary>
@@ -92,7 +92,7 @@ public interface IMetricsService
     /// <summary>
     /// Calculate risk metrics from discrepancies and assessment
     /// </summary>
-    Task<RiskMetrics> CalculateRiskMetricsAsync(
+    Task<ValidationRiskMetrics> CalculateRiskMetricsAsync(
         string sessionId,
         MigrationRiskAssessment assessment);
 
@@ -101,7 +101,7 @@ public interface IMetricsService
     /// </summary>
     Task UpdateRiskMetricsAsync(
         string sessionId,
-        RiskMetrics metrics);
+        ValidationRiskMetrics metrics);
 
     // Migration Readiness
     /// <summary>

@@ -15,7 +15,7 @@ public class ValidationMetrics
     public DataMetrics DataMetrics { get; set; } = new();
 
     // Discrepancy Metrics
-    public DiscrepancyMetrics DiscrepancyMetrics { get; set; } = new();
+    public ValidationDiscrepancyMetrics DiscrepancyMetrics { get; set; } = new();
 
     // Performance Metrics
     public PerformanceMetrics PerformanceMetrics { get; set; } = new();
@@ -24,7 +24,7 @@ public class ValidationMetrics
     public QualityMetrics QualityMetrics { get; set; } = new();
 
     // Risk Metrics
-    public RiskMetrics RiskMetrics { get; set; } = new();
+    public ValidationRiskMetrics RiskMetrics { get; set; } = new();
 
     // Migration Readiness
     public MigrationReadinessMetrics ReadinessMetrics { get; set; } = new();
@@ -98,7 +98,7 @@ public class DataMetrics
 /// <summary>
 /// Discrepancy analysis metrics
 /// </summary>
-public class DiscrepancyMetrics
+public class ValidationDiscrepancyMetrics
 {
     // Counts
     public int TotalDiscrepancies { get; set; }
@@ -200,7 +200,7 @@ public class QualityMetrics
 /// <summary>
 /// Risk assessment metrics
 /// </summary>
-public class RiskMetrics
+public class ValidationRiskMetrics
 {
     // Risk scoring
     public double OverallRiskScore { get; set; } // 0-100
@@ -376,10 +376,10 @@ public class ValidationHealth
     public string HealthStatus { get; set; } = "Healthy"; // Healthy, Warning, Critical
 
     // Component health
-    public ComponentHealth SchemaHealth { get; set; } = new();
-    public ComponentHealth DataHealth { get; set; } = new();
-    public ComponentHealth LogicHealth { get; set; } = new();
-    public ComponentHealth PerformanceHealth { get; set; } = new();
+    public MetricComponentHealth SchemaHealth { get; set; } = new();
+    public MetricComponentHealth DataHealth { get; set; } = new();
+    public MetricComponentHealth LogicHealth { get; set; } = new();
+    public MetricComponentHealth PerformanceHealth { get; set; } = new();
 
     // Trend
     public string HealthTrend { get; set; } = "stable"; // improving, stable, degrading
@@ -389,7 +389,7 @@ public class ValidationHealth
 /// <summary>
 /// Individual component health status
 /// </summary>
-public class ComponentHealth
+public class MetricComponentHealth
 {
     public string ComponentName { get; set; } = string.Empty;
     public double HealthScore { get; set; } // 0-100

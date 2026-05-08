@@ -199,11 +199,11 @@ public class ReportGenerator : IReportGenerator
             TablesMatched = comparisons?.Count(c => c.Status == ComparisonStatus.Identical) ?? 0,
             TablesWithDifferences = comparisons?.Count(c => c.Status != ComparisonStatus.Identical) ?? 0,
             OverallMatchPercentage = comparisons?.Average(c => c.MatchPercentage) ?? 0,
-            TotalRecordsCompared = comparisons?.Sum(c => c.LegacyRecordCount) ?? 0,
-            MatchedRecords = comparisons?.Sum(c => c.MatchedRecords) ?? 0,
-            MissingRecords = comparisons?.Sum(c => c.MissingRecords) ?? 0,
-            ExtraRecords = comparisons?.Sum(c => c.ExtraRecords) ?? 0,
-            ModifiedRecords = comparisons?.Sum(c => c.ModifiedRecords) ?? 0
+            TotalRecordsCompared = (int)(comparisons?.Sum(c => c.LegacyRecordCount) ?? 0),
+            MatchedRecords = (int)(comparisons?.Sum(c => c.MatchedRecords) ?? 0),
+            MissingRecords = (int)(comparisons?.Sum(c => c.MissingRecords) ?? 0),
+            ExtraRecords = (int)(comparisons?.Sum(c => c.ExtraRecords) ?? 0),
+            ModifiedRecords = (int)(comparisons?.Sum(c => c.ModifiedRecords) ?? 0)
         };
     }
 

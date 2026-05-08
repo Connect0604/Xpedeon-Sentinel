@@ -16,7 +16,7 @@ public class ValidationSession
 
     // Phase tracking
     public ValidationPhase CurrentPhase { get; set; } = ValidationPhase.Initialize;
-    public Dictionary<ValidationPhase, PhaseStatus> PhaseStatuses { get; set; } = new();
+    public Dictionary<ValidationPhase, SessionPhaseStatus> PhaseStatuses { get; set; } = new();
 
     // Compressed artifacts from each phase
     public Dictionary<string, List<CompressedArtifact>> PhaseArtifacts { get; set; } = new();
@@ -58,7 +58,7 @@ public enum ValidationPhase
 /// <summary>
 /// Status of a validation phase
 /// </summary>
-public class PhaseStatus
+public class SessionPhaseStatus
 {
     public ValidationPhase Phase { get; set; }
     public PhaseState State { get; set; } = PhaseState.Pending;
@@ -96,6 +96,12 @@ public class DiscoveryFindings
     public Dictionary<string, int> LogicByModule { get; set; } = new();
     public DateTime DiscoveredAt { get; set; } = DateTime.UtcNow;
     public string? ExpertNotes { get; set; }
+    public int TablesAnalyzed { get; set; }
+    public int ColumnsAnalyzed { get; set; }
+    public int StoredProceduresFound { get; set; }
+    public int RulesIdentified { get; set; }
+    public List<string> DataQualityIssues { get; set; } = new();
+    public List<string> KeyFindings { get; set; } = new();
 }
 
 /// <summary>
@@ -127,6 +133,9 @@ public class ExecutionResults
     public Dictionary<string, long> PerformanceMetrics { get; set; } = new();
     public DateTime ExecutedAt { get; set; } = DateTime.UtcNow;
     public long TotalExecutionTimeMs { get; set; }
+    public DateTime StartTime { get; set; } = DateTime.UtcNow;
+    public DateTime EndTime { get; set; } = DateTime.UtcNow;
+    public long DurationMs { get; set; }
 }
 
 /// <summary>
@@ -146,17 +155,6 @@ public class Discrepancy
     public bool IsResolved { get; set; }
     public DateTime DiscoveredAt { get; set; } = DateTime.UtcNow;
     public string? ResolutionNotes { get; set; }
-}
-
-/// <summary>
-/// Discrepancy severity levels
-/// </summary>
-public enum DiscrepancySeverity
-{
-    Critical,   // Must fix before launch
-    High,       // Should fix before launch
-    Medium,     // Can fix before launch
-    Low         // Can fix post-launch
 }
 
 /// <summary>

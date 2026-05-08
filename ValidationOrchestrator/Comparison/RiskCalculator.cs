@@ -371,13 +371,10 @@ public class RiskCalculator : IRiskCalculator
 
     public MigrationReadiness DetermineMigrationReadiness(double riskScore)
     {
-        return riskScore switch
-        {
-            < _config.CriticalThreshold => MigrationReadiness.Ready,
-            < _config.HighThreshold => MigrationReadiness.AlmostReady,
-            < _config.MediumThreshold => MigrationReadiness.PartiallyReady,
-            _ => MigrationReadiness.NotReady
-        };
+        if (riskScore < _config.CriticalThreshold) return MigrationReadiness.Ready;
+        if (riskScore < _config.HighThreshold) return MigrationReadiness.AlmostReady;
+        if (riskScore < _config.MediumThreshold) return MigrationReadiness.PartiallyReady;
+        return MigrationReadiness.NotReady;
     }
 
     public List<string> IdentifyGoBlockers(MigrationRiskAssessment assessment)

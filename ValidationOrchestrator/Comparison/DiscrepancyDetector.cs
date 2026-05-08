@@ -31,7 +31,7 @@ public class DiscrepancyDetector : IDiscrepancyDetector
         if (comparisonResult.MatchPercentage < 100)
         {
             var impactPercentage = 100 - comparisonResult.MatchPercentage;
-            var severity = DetermineSeverity(impactPercentage, comparisonResult.ModifiedRecords);
+            var severity = DetermineSeverity(impactPercentage, (int)comparisonResult.ModifiedRecords);
 
             discrepancies.Add(CreateDataDiscrepancy(
                 module: "DataComparison",
@@ -39,7 +39,7 @@ public class DiscrepancyDetector : IDiscrepancyDetector
                 category: "DataValue",
                 description: $"Data mismatch detected: {comparisonResult.MatchPercentage:F1}% records match",
                 severity: severity,
-                affectedRecordCount: comparisonResult.ModifiedRecords,
+                affectedRecordCount: (int)comparisonResult.ModifiedRecords,
                 impactPercentage: impactPercentage
             ));
         }
@@ -53,8 +53,8 @@ public class DiscrepancyDetector : IDiscrepancyDetector
                 table: comparisonResult.TableName,
                 category: "Completeness",
                 description: $"Missing rows in Blazor system: {comparisonResult.MissingRecords} records not found",
-                severity: DetermineSeverity(impactPercentage, comparisonResult.MissingRecords),
-                affectedRecordCount: comparisonResult.MissingRecords,
+                severity: DetermineSeverity(impactPercentage, (int)comparisonResult.MissingRecords),
+                affectedRecordCount: (int)comparisonResult.MissingRecords,
                 impactPercentage: impactPercentage
             ));
         }
@@ -68,8 +68,8 @@ public class DiscrepancyDetector : IDiscrepancyDetector
                 table: comparisonResult.TableName,
                 category: "Consistency",
                 description: $"Extra rows in Blazor system: {comparisonResult.ExtraRecords} records not in legacy",
-                severity: DetermineSeverity(impactPercentage, comparisonResult.ExtraRecords),
-                affectedRecordCount: comparisonResult.ExtraRecords,
+                severity: DetermineSeverity(impactPercentage, (int)comparisonResult.ExtraRecords),
+                affectedRecordCount: (int)comparisonResult.ExtraRecords,
                 impactPercentage: impactPercentage
             ));
         }
@@ -87,13 +87,10 @@ public class DiscrepancyDetector : IDiscrepancyDetector
                     Column = columnComparison.ColumnName,
                     Category = columnComparison.TypeConversionIssues > 0 ? "DataType" : "DataValue",
                     Description = $"Column mismatch: {columnComparison.ColumnName} ({columnComparison.MatchPercentage:F1}% match)",
-                    Severity = DetermineSeverity(impactPercentage, columnComparison.DifferentValues),
-                    AffectedRecordCount = columnComparison.DifferentValues,
+                    Severity = DetermineSeverity(impactPercentage, (int)columnComparison.DifferentValues),
+                    AffectedRecordCount = (int)columnComparison.DifferentValues,
                     ImpactPercentage = impactPercentage,
-                    Evidence = columnComparison.SampleDifferences
-                        .Take(3)
-                        .Select(d => $"{d.ColumnName}: '{d.LegacyValue}' vs '{d.BlazonValue}'")
-                        .ToList(),
+                    Evidence = columnComparison.SampleDifferences.Take(3).ToList(),
                     IsResolvable = true
                 });
             }
@@ -144,9 +141,9 @@ public class DiscrepancyDetector : IDiscrepancyDetector
             {
                 var severity = diff.Severity switch
                 {
-                    "Critical" => DiscrepancySeverity.Critical,
-                    "High" => DiscrepancySeverity.High,
-                    "Medium" => DiscrepancySeverity.Medium,
+                    DifferenceSeverity.Critical => DiscrepancySeverity.Critical,
+                    DifferenceSeverity.High => DiscrepancySeverity.High,
+                    DifferenceSeverity.Medium => DiscrepancySeverity.Medium,
                     _ => DiscrepancySeverity.Low
                 };
 
@@ -162,12 +159,12 @@ public class DiscrepancyDetector : IDiscrepancyDetector
         }
 
         // Check compatibility
-        if (schemaAnalysis.Compatibility != SchemaAnalysisResult.CompatibilityLevel.FullyCompatible)
+        if (schemaAnalysis.Compatibility != SchemaCompatibility.FullyCompatible)
         {
             var severity = schemaAnalysis.Compatibility switch
             {
-                SchemaAnalysisResult.CompatibilityLevel.Incompatible => DiscrepancySeverity.Critical,
-                SchemaAnalysisResult.CompatibilityLevel.Partial => DiscrepancySeverity.High,
+                SchemaCompatibility.Incompatible => DiscrepancySeverity.Critical,
+                SchemaCompatibility.Partial => DiscrepancySeverity.High,
                 _ => DiscrepancySeverity.Medium
             };
 

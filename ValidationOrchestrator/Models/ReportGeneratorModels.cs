@@ -50,6 +50,7 @@ public class ExecutiveSummary
     public List<string> KeyMetrics { get; set; } = new();
     public List<string> Highlights { get; set; } = new();
     public DateTime? ProjectedReadyDate { get; set; }
+    public List<string> GoBlockers { get; set; } = new();
 }
 
 /// <summary>

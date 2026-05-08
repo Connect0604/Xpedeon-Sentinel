@@ -121,11 +121,14 @@ public class CacheStatistics
     public int ExpiredCachedSessions { get; set; }
     public long TotalCacheMemoryBytes { get; set; }
     public double AverageCacheMemoryPerSessionBytes { get; set; }
-    public int CacheHits { get; set; }
-    public int CacheMisses { get; set; }
+    public long CacheHits { get; set; }
+    public long CacheMisses { get; set; }
     public double CacheHitRate { get; set; } // 0-100
-    public int CacheEvictions { get; set; }
+    public long CacheEvictions { get; set; }
     public long AverageResponseTimeMs { get; set; }
+    public long TotalGetRequests { get; set; }
+    public long TotalSetRequests { get; set; }
+    public long TotalDeleteRequests { get; set; }
     public DateTime CalculatedAt { get; set; } = DateTime.UtcNow;
 }
 

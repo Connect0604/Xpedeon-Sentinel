@@ -90,7 +90,7 @@ public class StatusCacheService : IStatusCacheService
         var entry = new CacheEntry<object>
         {
             Key = key,
-            Value = value ?? new(),
+            Value = (object?)value ?? new object(),
             CreatedAt = DateTime.UtcNow,
             ExpiresAt = ttlSeconds.HasValue ? DateTime.UtcNow.AddSeconds(ttlSeconds.Value) : null,
             Size = EstimateSize(value)
@@ -828,9 +828,9 @@ public class StatusCacheService : IStatusCacheService
 
         foreach (var key in plan.KeysToWarmUp)
         {
-            if (plan.Revalidator != null)
+            if (plan.WarmupFunction != null)
             {
-                var value = await plan.Revalidator(key);
+                var value = await plan.WarmupFunction(key);
                 await SetAsync(sessionId, key, value, _config.DefaultTtlSeconds);
             }
 

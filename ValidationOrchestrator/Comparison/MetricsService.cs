@@ -52,10 +52,10 @@ public class MetricsService : IMetricsService
     {
         var metrics = new SchemaMetrics
         {
-            TotalTableCount = schemaAnalysis.SchemaMapping?.SourceTables.Count ?? 0,
-            MatchedTableCount = schemaAnalysis.SchemaMapping?.MappedTables.Count ?? 0,
+            TotalTableCount = schemaAnalysis.Mapping?.TableMappings.Count ?? 0,
+            MatchedTableCount = schemaAnalysis.Mapping?.TableMappings.Count ?? 0,
             TotalColumnCount = schemaAnalysis.Differences?.Count(d => d.DifferenceType == "ColumnMismatch") ?? 0,
-            DataTypeCompatibilityPercentage = schemaAnalysis.IsCompatible ? 100 : 50
+            DataTypeCompatibilityPercentage = (schemaAnalysis.Compatibility == SchemaCompatibility.FullyCompatible || schemaAnalysis.Compatibility == SchemaCompatibility.Compatible) ? 100 : 50
         };
 
         if (metrics.TotalTableCount > 0)
@@ -91,11 +91,11 @@ public class MetricsService : IMetricsService
     {
         var metrics = new DataMetrics
         {
-            TotalRowsLegacy = comparison.SourceRowCount,
-            TotalRowsBlazor = comparison.TargetRowCount,
-            MatchedRowCount = comparison.MatchedRows.Count,
-            MismatchedRowCount = comparison.MismatchedRows.Count,
-            TotalValueCount = comparison.SourceRowCount * (comparison.ColumnDifferences?.Count ?? 1)
+            TotalRowsLegacy = comparison.LegacyRecordCount,
+            TotalRowsBlazor = comparison.BlazonRecordCount,
+            MatchedRowCount = comparison.MatchedRecords,
+            MismatchedRowCount = comparison.ModifiedRecords,
+            TotalValueCount = comparison.LegacyRecordCount * (comparison.ColumnComparisons?.Count ?? 1)
         };
 
         if (metrics.TotalRowsLegacy > 0)
@@ -107,7 +107,7 @@ public class MetricsService : IMetricsService
 
         if (metrics.TotalValueCount > 0)
         {
-            metrics.MismatchedValueCount = comparison.ColumnDifferences?.Sum(cd => cd.DifferenceCount) ?? 0;
+            metrics.MismatchedValueCount = comparison.ColumnComparisons?.Sum(cd => cd.DifferentValues) ?? 0;
             metrics.ValueMismatchPercentage = (metrics.MismatchedValueCount / (double)metrics.TotalValueCount) * 100;
         }
 
@@ -146,11 +146,11 @@ public class MetricsService : IMetricsService
         return aggregated;
     }
 
-    public async Task<DiscrepancyMetrics> CalculateDiscrepancyMetricsAsync(
+    public async Task<ValidationDiscrepancyMetrics> CalculateDiscrepancyMetricsAsync(
         string sessionId,
         DiscrepancyAnalysisResult analysis)
     {
-        var metrics = new DiscrepancyMetrics
+        var metrics = new ValidationDiscrepancyMetrics
         {
             TotalDiscrepancies = analysis.Discrepancies.Count
         };
@@ -175,28 +175,28 @@ public class MetricsService : IMetricsService
 
             switch (disc.Category)
             {
-                case DiscrepancyCategory.DataTypeIssue:
+                case "DataType":
                     metrics.DataTypeIssues++;
                     break;
-                case DiscrepancyCategory.DataLoss:
+                case "Completeness":
                     metrics.DataLossIssues++;
                     break;
-                case DiscrepancyCategory.NullHandling:
+                case "NullHandling":
                     metrics.NullHandlingIssues++;
                     break;
-                case DiscrepancyCategory.ReferentialIntegrity:
+                case "DataIntegrity":
                     metrics.ReferentialIntegrityIssues++;
                     break;
-                case DiscrepancyCategory.CalculationLogic:
+                case "BusinessLogic":
                     metrics.CalculationLogicIssues++;
                     break;
-                case DiscrepancyCategory.FormatConversion:
+                case "FormatConversion":
                     metrics.FormatConversionIssues++;
                     break;
-                case DiscrepancyCategory.BusinessRuleViolation:
+                case "BusinessRule":
                     metrics.BusinessRuleViolations++;
                     break;
-                case DiscrepancyCategory.PerformanceDegradation:
+                case "Performance":
                     metrics.PerformanceDegradations++;
                     break;
                 default:
@@ -205,8 +205,8 @@ public class MetricsService : IMetricsService
             }
         }
 
-        metrics.TotalAffectedTables = analysis.AffectedTables?.Count ?? 0;
-        metrics.TotalAffectedColumns = analysis.AffectedColumns?.Count ?? 0;
+        metrics.TotalAffectedTables = analysis.Discrepancies.Select(d => d.Table).Where(t => !string.IsNullOrEmpty(t)).Distinct().Count();
+        metrics.TotalAffectedColumns = analysis.Discrepancies.Select(d => d.Column).Where(c => !string.IsNullOrEmpty(c)).Distinct().Count();
 
         var current = await GetMetricsAsync(sessionId);
         current.DiscrepancyMetrics = metrics;
@@ -215,7 +215,7 @@ public class MetricsService : IMetricsService
         return metrics;
     }
 
-    public async Task<DiscrepancyMetrics> GetDiscrepancyBreakdownAsync(string sessionId)
+    public async Task<ValidationDiscrepancyMetrics> GetDiscrepancyBreakdownAsync(string sessionId)
     {
         var metrics = await GetMetricsAsync(sessionId);
         return metrics.DiscrepancyMetrics;
@@ -324,14 +324,14 @@ public class MetricsService : IMetricsService
         return modules;
     }
 
-    public async Task<RiskMetrics> CalculateRiskMetricsAsync(
+    public async Task<ValidationRiskMetrics> CalculateRiskMetricsAsync(
         string sessionId,
         MigrationRiskAssessment assessment)
     {
         var metrics = await GetMetricsAsync(sessionId);
         var discrepancyMetrics = metrics.DiscrepancyMetrics;
 
-        var riskMetrics = new RiskMetrics
+        var riskMetrics = new ValidationRiskMetrics
         {
             OverallRiskScore = assessment.OverallRiskScore,
             SchemaRiskScore = discrepancyMetrics.DataTypeIssues * 5,
@@ -345,16 +345,16 @@ public class MetricsService : IMetricsService
             LowRisks = discrepancyMetrics.LowCount,
 
             AffectedModules = assessment.ModuleRisks?.Count ?? 3,
-            AffectedBusinessProcesses = assessment.AffectedBusinessProcesses?.Count ?? 5,
+            AffectedBusinessProcesses = assessment.ModuleRisks?.Count ?? 5,
             PotentiallyAffectedUsers = 1000,
-            HighImpactTables = assessment.CriticalRisks?.Count ?? 10
+            HighImpactTables = assessment.CriticalItems?.Count ?? 10
         };
 
         riskMetrics.MitigationStrategiesIdentified = assessment.MitigationStrategies?.Count ?? 5;
         riskMetrics.MitigationCoveragePercent = (riskMetrics.MitigationStrategiesIdentified / (double)Math.Max(riskMetrics.CriticalRisks + riskMetrics.HighRisks, 1)) * 100;
 
-        riskMetrics.AssessmentConfidenceLevel = assessment.Confidence;
-        riskMetrics.ConfidenceRating = assessment.Confidence > 0.8 ? "high" : assessment.Confidence > 0.5 ? "medium" : "low";
+        riskMetrics.AssessmentConfidenceLevel = assessment.OverallHealthScore / 100.0;
+        riskMetrics.ConfidenceRating = riskMetrics.AssessmentConfidenceLevel > 0.8 ? "high" : riskMetrics.AssessmentConfidenceLevel > 0.5 ? "medium" : "low";
 
         var current = await GetMetricsAsync(sessionId);
         current.RiskMetrics = riskMetrics;
@@ -363,7 +363,7 @@ public class MetricsService : IMetricsService
         return riskMetrics;
     }
 
-    public async Task UpdateRiskMetricsAsync(string sessionId, RiskMetrics metrics)
+    public async Task UpdateRiskMetricsAsync(string sessionId, ValidationRiskMetrics metrics)
     {
         var current = await GetMetricsAsync(sessionId);
         current.RiskMetrics = metrics;
@@ -559,10 +559,10 @@ public class MetricsService : IMetricsService
         var health = new ValidationHealth
         {
             SessionId = sessionId,
-            SchemaHealth = new ComponentHealth { ComponentName = "Schema", HealthScore = metrics.SchemaMetrics.SchemaCompleteness },
-            DataHealth = new ComponentHealth { ComponentName = "Data", HealthScore = metrics.DataMetrics.DataIntegrityScore },
-            LogicHealth = new ComponentHealth { ComponentName = "Logic", HealthScore = 85 },
-            PerformanceHealth = new ComponentHealth { ComponentName = "Performance", HealthScore = 90 }
+            SchemaHealth = new MetricComponentHealth { ComponentName = "Schema", HealthScore = metrics.SchemaMetrics.SchemaCompleteness },
+            DataHealth = new MetricComponentHealth { ComponentName = "Data", HealthScore = metrics.DataMetrics.DataIntegrityScore },
+            LogicHealth = new MetricComponentHealth { ComponentName = "Logic", HealthScore = 85 },
+            PerformanceHealth = new MetricComponentHealth { ComponentName = "Performance", HealthScore = 90 }
         };
 
         health.HealthScore = (health.SchemaHealth.HealthScore + health.DataHealth.HealthScore +

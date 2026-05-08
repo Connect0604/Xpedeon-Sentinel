@@ -355,7 +355,7 @@ public class ProgressService : IProgressService
             return await Task.FromResult(result);
         }
 
-        return await Task.FromResult(new());
+        return new();
     }
 
     public async Task<List<ProgressUpdateEvent>> GetRecentUpdatesAsync(string sessionId, int maxEvents = 50)
@@ -366,7 +366,7 @@ public class ProgressService : IProgressService
             return await Task.FromResult(result);
         }
 
-        return await Task.FromResult(new());
+        return new();
     }
 
     public async Task<ProgressEstimate> GetPhaseEstimateAsync(string phaseName)
@@ -562,7 +562,7 @@ public class ProgressService : IProgressService
         if (_milestones.TryGetValue(sessionId, out var milestones))
             return await Task.FromResult(milestones);
 
-        return await Task.FromResult(new());
+        return new();
     }
 
     public async Task CheckMilestonesAsync(string sessionId)
@@ -611,7 +611,7 @@ public class ProgressService : IProgressService
 
     public async IAsyncEnumerable<ProgressUpdateEvent> GetUpdatesStreamAsync(
         string sessionId,
-        System.Collections.Generic.CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default)
     {
         if (_updates.TryGetValue(sessionId, out var updates))
         {

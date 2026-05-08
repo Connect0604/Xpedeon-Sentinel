@@ -44,7 +44,7 @@ public class ValidationMemoryService : IValidationMemoryService
         // Initialize phase statuses
         foreach (ValidationPhase phase in Enum.GetValues(typeof(ValidationPhase)))
         {
-            session.PhaseStatuses[phase] = new PhaseStatus
+            session.PhaseStatuses[phase] = new SessionPhaseStatus
             {
                 Phase = phase,
                 State = phase == ValidationPhase.Initialize ? PhaseState.InProgress : PhaseState.Pending,
@@ -154,7 +154,7 @@ public class ValidationMemoryService : IValidationMemoryService
             nextPhase);
     }
 
-    public async Task<PhaseStatus?> GetPhaseStatusAsync(string sessionId, ValidationPhase phase)
+    public async Task<SessionPhaseStatus?> GetSessionPhaseStatusAsync(string sessionId, ValidationPhase phase)
     {
         var session = await GetSessionAsync(sessionId);
         if (session == null) return null;
@@ -162,7 +162,7 @@ public class ValidationMemoryService : IValidationMemoryService
         return session.PhaseStatuses.TryGetValue(phase, out var status) ? status : null;
     }
 
-    public async Task UpdatePhaseStatusAsync(string sessionId, PhaseStatus status)
+    public async Task UpdateSessionPhaseStatusAsync(string sessionId, SessionPhaseStatus status)
     {
         var session = await GetSessionAsync(sessionId);
         if (session == null) return;

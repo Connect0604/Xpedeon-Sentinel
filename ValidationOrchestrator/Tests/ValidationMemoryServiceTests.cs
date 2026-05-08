@@ -161,7 +161,7 @@ public class ValidationMemoryServiceTests
         var session = await service.CreateSessionAsync(TestClientId);
 
         // Act
-        var status = await service.GetPhaseStatusAsync(session.Id, ValidationPhase.Discovery);
+        var status = await service.GetSessionPhaseStatusAsync(session.Id, ValidationPhase.Discovery);
 
         // Assert
         status.Should().NotBeNull();
@@ -443,7 +443,7 @@ public class ValidationMemoryServiceTests
         var service = new ValidationMemoryService(mockCompression.Object);
         var session = await service.CreateSessionAsync(TestClientId);
 
-        var status = new PhaseStatus
+        var status = new SessionPhaseStatus
         {
             Phase = ValidationPhase.Discovery,
             State = PhaseState.InProgress,
@@ -452,8 +452,8 @@ public class ValidationMemoryServiceTests
         };
 
         // Act
-        await service.UpdatePhaseStatusAsync(session.Id, status);
-        var retrieved = await service.GetPhaseStatusAsync(session.Id, ValidationPhase.Discovery);
+        await service.UpdateSessionPhaseStatusAsync(session.Id, status);
+        var retrieved = await service.GetSessionPhaseStatusAsync(session.Id, ValidationPhase.Discovery);
 
         // Assert
         retrieved!.ItemsProcessed.Should().Be(50);

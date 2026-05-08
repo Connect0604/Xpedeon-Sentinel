@@ -9,7 +9,7 @@ using ValidationOrchestrator.Models;
 /// <summary>
 /// SQL Server database connector (read-only access)
 /// </summary>
-public class DatabaseConnector : IDatabaseConnector, IAsyncDisposable
+public class DatabaseConnector : IDatabaseConnector
 {
     private readonly string _connectionString;
     private readonly DatabaseConnectionOptions _options;
@@ -188,9 +188,8 @@ public class DatabaseConnector : IDatabaseConnector, IAsyncDisposable
         return 0;
     }
 
-    public async ValueTask DisposeAsync()
+    public async Task DisposeAsync()
     {
-        // No resources to dispose
         await Task.CompletedTask;
     }
 }

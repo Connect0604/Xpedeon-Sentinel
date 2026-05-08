@@ -1,5 +1,6 @@
 namespace ValidationOrchestrator.Comparison;
 
+using ValidationOrchestrator.Database;
 using ValidationOrchestrator.Models;
 
 /// <summary>
